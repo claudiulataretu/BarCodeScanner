@@ -1,31 +1,32 @@
 <resources>
 
-    <!-- Base application theme. -->
-    <style name="MaterialTheme" parent="ParentMaterialTheme">
-    </style>
+	<!-- Base application theme. -->
+	<style name="MaterialTheme" parent="ParentMaterialTheme">
+		<!-- Customize your theme here. -->
 
+	</style>
 
-    <style name="ParentMaterialTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+	<style name="ParentMaterialTheme" parent="Theme.AppCompat.Light.NoActionBar">
 
-        <item name="colorControlHighlight">#1ef1ab</item>
-        <item name="colorButtonNormal">#f955f3</item>
-        <item name="colorControlActivated">#0cf427</item>
-    </style>
+		<!-- Parent theme For all Pre - lollipop and lollipop above versions i.e. For all devices -->
 
-    <style name="ToolbarTheme" parent="ThemeOverlay.AppCompat.Light">
-        <item name="android:textColorPrimary">@android:color/white</item>
-        <item name="android:textColorSecondary">@android:color/white</item>
+		<item name="colorPrimary">@color/colorPrimary</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+		<item name="colorAccent">@color/colorAccent</item>
+	</style>
 
-    </style>
+	<style name="ToolBarTheme"  parent="ThemeOverlay.AppCompat.Light">
 
-    <style name="PopTheme" parent="ThemeOverlay.AppCompat.Light">
-        <item name="android:textColorPrimary">#9e9e9e</item>
-        <item name="android:background">#fffcfff6</item>
+		<item name="android:textColorPrimary">#fff</item>    <!-- Text Color of Toolbar Title  -->
+		<item name="android:textColorSecondary">#fff</item>  <!-- Color of Overflow Menu ( 3 DOTS icon )
+                                                                    and color of Navigation Drawer Icon-->
+	</style>
 
-    </style>
+	<style name="PopupTheme"  parent="ThemeOverlay.AppCompat.Light">
+
+		<item name="android:textColorPrimary">@color/grey_500</item>  <!-- Text color of Overflow Menu -->
+		<item name="android:background">@color/overflowMenuBg</item>        <!-- Background of Overflow Menu -->
+
+	</style>
 
 </resources>

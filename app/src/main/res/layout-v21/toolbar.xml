@@ -6,8 +6,17 @@
     android:layout_height="wrap_content"
     android:background="@color/colorPrimary"
     android:minHeight="?android:attr/actionBarSize"
-    app:theme="@style/ToolbarTheme"
+    app:theme="@style/ToolBarTheme"
     android:elevation="5dp"
-    app:popupTheme="@style/PopTheme">
+    app:popupTheme="@style/PopupTheme">
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminateTint="#795548"
+        android:indeterminateTintMode="src_in"
+        android:layout_gravity="end"
+        />
 
 </android.support.v7.widget.Toolbar>

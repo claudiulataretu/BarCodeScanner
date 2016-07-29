@@ -3,11 +3,10 @@ package com.cilatare.barcodescanner.AsyncTasks;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import com.cilatare.barcodescanner.Constants;
-import com.cilatare.barcodescanner.MainActivity;
+import com.cilatare.barcodescanner.activities.MainActivity;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
@@ -92,9 +91,9 @@ public class ProductsNameTask extends AsyncTask<Void, Void, List<String>> {
     protected void onPostExecute(List<String> output) {
         mainActivity.progressBar.setVisibility(View.INVISIBLE);
 
-        ArrayAdapter adapter = new ArrayAdapter(mainActivity, android.R.layout.simple_dropdown_item_1line, output);
+        /*ArrayAdapter adapter = new ArrayAdapter(mainActivity, android.R.layout.simple_dropdown_item_1line, output);
         mainActivity.nameEditText.setAdapter(adapter);
-        mainActivity.nameEditText.setThreshold(0);
+        mainActivity.nameEditText.setThreshold(0);*/
     }
 
     @Override

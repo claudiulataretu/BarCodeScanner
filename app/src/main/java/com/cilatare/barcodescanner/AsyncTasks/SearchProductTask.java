@@ -2,12 +2,11 @@ package com.cilatare.barcodescanner.AsyncTasks;
 
 import android.os.AsyncTask;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import com.cilatare.barcodescanner.Constants;
-import com.cilatare.barcodescanner.MainActivity;
-import com.cilatare.barcodescanner.Product;
+import com.cilatare.barcodescanner.activities.MainActivity;
+import com.cilatare.barcodescanner.model.Product;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
@@ -46,7 +45,6 @@ public class SearchProductTask extends AsyncTask<String, Void, List<Product>> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        mainActivity.progressBar.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -94,7 +92,6 @@ public class SearchProductTask extends AsyncTask<String, Void, List<Product>> {
 
     @Override
     protected void onPostExecute(List<Product> output) {
-        mainActivity.progressBar.setVisibility(View.INVISIBLE);
 
         for (Product product : output) {
             if (product.getName().equals(query) || product.getBarcode().equals(query)) {
@@ -128,6 +125,5 @@ public class SearchProductTask extends AsyncTask<String, Void, List<Product>> {
         } else {
             Toast.makeText(mainActivity, "Request cancelled.", Toast.LENGTH_LONG).show();
         }
-        mainActivity.progressBar.setVisibility(View.INVISIBLE);
     }
 }

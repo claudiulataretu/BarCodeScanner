@@ -6,8 +6,8 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.cilatare.barcodescanner.Constants;
-import com.cilatare.barcodescanner.MainActivity;
-import com.cilatare.barcodescanner.Product;
+import com.cilatare.barcodescanner.activities.MainActivity;
+import com.cilatare.barcodescanner.model.Product;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
