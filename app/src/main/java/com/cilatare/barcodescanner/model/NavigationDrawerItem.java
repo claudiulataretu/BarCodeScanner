@@ -1,5 +1,7 @@
 package com.cilatare.barcodescanner.model;
 
+import android.content.Context;
+
 import com.cilatare.barcodescanner.R;
 
 import java.util.ArrayList;
@@ -12,7 +14,6 @@ public class NavigationDrawerItem {
 
     private String title;
     private int imageId;
-
 
 
     public String getTitle() {
@@ -31,11 +32,11 @@ public class NavigationDrawerItem {
         this.imageId = imageId;
     }
 
-    public static List<NavigationDrawerItem> getData() {
+    public static List<NavigationDrawerItem> getData(Context context) {
         List<NavigationDrawerItem> dataList = new ArrayList<>();
 
         int[] imageIds = getImages();
-        String[] titles = getTitles();
+        String[] titles = getTitles(context);
 
         for (int i = 0; i < titles.length; ++ i) {
             NavigationDrawerItem navItem = new NavigationDrawerItem();
@@ -47,14 +48,13 @@ public class NavigationDrawerItem {
         return dataList;
     }
 
-    private static String[] getTitles() {
-        return new String[] {
-                "List Products", "Search Products", "Scan Product"};
+    private static String[] getTitles(Context context) {
+        return context.getResources().getStringArray(R.array.nav_drawer_labels);
     }
 
     private static int[] getImages() {
         return new int[]{
-                R.mipmap.ic_list_black_36dp, R.drawable.ic_search, R.mipmap.ic_scanner_black_36dp
+                R.mipmap.ic_list_black_36dp, R.mipmap.ic_search_black_36dp, R.mipmap.ic_scanner_black_36dp
         };
     }
 }

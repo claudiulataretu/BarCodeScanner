@@ -9,13 +9,14 @@
     <string name="delete_image">deleteImage</string>
     <string name="thumbnail">thumbnail</string>
 
+    <string name="list_products">List Products</string>
+    <string name="search_product">Search Product</string>
+    <string name="scan_product">Scan Product</string>
+
     <string-array name="nav_drawer_labels">
-        <item>Birds</item>
-        <item>Animal</item>
-        <item>Forest</item>
-        <item>Ocean</item>
-        <item>Planets</item>
-        <item>Landscape</item>
+        <item>@string/list_products</item>
+        <item>@string/search_product</item>
+        <item>@string/scan_product</item>
     </string-array>
 
     <string name="drawer_open">Open</string>
@@ -31,5 +32,15 @@
     <string name="select_working_sheet">Select working sheet</string>
     <string name="search_icon">Search Icon</string>
     <string name="place_holder">Place Holder</string>
+    <string name="add_product">ADD PRODUCT</string>
+    <string name="modify_product">MODIFY PRODUCT</string>
+    <string name="scan">SCAN</string>
+    <string name="language">Language</string>
+    <string name="romanian">Romanian</string>
+    <string name="english">English</string>
+    <string name="product_quantity">PRODUCT QUANTITY</string>
+    <string name="product_price">PRODUCT PRICE</string>
+    <string name="product_name">PRODUCT NAME</string>
+    <string name="product_barcode">PRODUCT BARCODE</string>
 
 </resources>

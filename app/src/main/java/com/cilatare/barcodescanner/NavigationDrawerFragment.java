@@ -1,7 +1,7 @@
 package com.cilatare.barcodescanner;
 
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -33,7 +33,7 @@ public class NavigationDrawerFragment extends Fragment {
     private void setUpRecyclerView(View view) {
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.drawerList);
 
-        NavigationDrawerAdapter adapter = new NavigationDrawerAdapter(getActivity(), NavigationDrawerItem.getData());
+        NavigationDrawerAdapter adapter = new NavigationDrawerAdapter(getActivity(), NavigationDrawerItem.getData(getActivity().getApplicationContext()));
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
     }

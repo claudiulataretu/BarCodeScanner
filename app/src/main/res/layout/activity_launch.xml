@@ -1,7 +1,5 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -30,12 +28,20 @@
         android:contentDescription="@string/profile_photo"
         android:layout_centerHorizontal="true" />
 
+    <TextView
+        android:id="@+id/launch_profile_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/launch_profile_picture"
+        android:textSize="24sp"/>
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/select_working_sheet"
         android:id="@+id/spreadsheet_button"
-        android:layout_below="@+id/launch_profile_picture"
+        android:layout_below="@+id/launch_profile_name"
         android:layout_centerHorizontal="true" />
 
     <com.google.android.gms.common.SignInButton

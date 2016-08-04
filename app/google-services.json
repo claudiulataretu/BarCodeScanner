@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "1081164920683",
+    "firebase_url": "https://driveproject-1365.firebaseio.com",
+    "project_id": "driveproject-1365",
+    "storage_bucket": "driveproject-1365.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1081164920683:android:3cec3388b5dfa386",
+        "android_client_info": {
+          "package_name": "com.cilatare.barcodescanner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1081164920683-hpu23ngob3umks6m5pfgovn553hpa551.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cilatare.barcodescanner",
+            "certificate_hash": "4558DA6DF4CFB1201DA1AF027CB0BB4985FF772F"
+          }
+        },
+        {
+          "client_id": "1081164920683-h9vpslfveh32a5bt0m8prohp9rn7j477.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cilatare.barcodescanner",
+            "certificate_hash": "81F9290EB8F31F34ED69986AD4DA904499A90916"
+          }
+        },
+        {
+          "client_id": "1081164920683-ohftclkpb89luij5dqqe9jqesgi5lgu1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGZKnx5LDNjqDETS3x3t38nuQcTOi6IWE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1081164920683-ohftclkpb89luij5dqqe9jqesgi5lgu1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

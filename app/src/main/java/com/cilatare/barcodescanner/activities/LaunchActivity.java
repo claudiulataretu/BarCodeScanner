@@ -3,25 +3,25 @@ package com.cilatare.barcodescanner.activities;
 import android.Manifest;
 import android.accounts.AccountManager;
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.Uri;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cilatare.barcodescanner.AsyncTasks.MyProfilePhotoTask;
@@ -34,11 +34,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveFile;
@@ -48,11 +46,10 @@ import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.OpenFileActivityBuilder;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.util.ExponentialBackOff;
-import com.google.api.services.sheets.v4.SheetsScopes;
-import com.google.firebase.auth.AuthCredential;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -65,14 +62,19 @@ public class LaunchActivity extends AppCompatActivity implements GoogleApiClient
 
     private Button spreadsheetButton = null;
     private SignInButton signIn = null;
+    private TextView profileTextView = null;
+
     private String spreadSheetId = null;
 
     private ImageView profileImageView = null;
     private ProgressBar progressBar =  null;
 
     private GoogleSignInOptions gso;
-    private Uri profileImage;
+    private String profileImage;
     private String profileName;
+    private String profileEmail;
+    private String language;
+    private Boolean isConnected;
 
     private MySharedPreferences mySharedPreferences;
 
@@ -98,44 +100,37 @@ public class LaunchActivity extends AppCompatActivity implements GoogleApiClient
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_launch);
 
         mySharedPreferences = new MySharedPreferences(this);
+        isConnected = mySharedPreferences.getConnected();
+
+        language = mySharedPreferences.getLanguage();
+
+        if (language != null) {
+            switch (language) {
+                case "ro":
+                    setLocale("ro");
+                    break;
+                case "en":
+                    setLocale("en");
+                    break;
+            }
+        }
+
+        setContentView(R.layout.activity_launch);
 
         spreadsheetButton = (Button) findViewById(R.id.spreadsheet_button);
         signIn = (SignInButton) findViewById(R.id.sign_in);
 
         profileImageView = (ImageView) findViewById(R.id.launch_profile_picture);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.INVISIBLE);
+        profileTextView = (TextView) findViewById(R.id.launch_profile_name);
+        profileTextView.setText("");
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.inflateMenu(R.menu.menu_main);
 
-
-        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.logout:
-                        Auth.GoogleSignInApi.signOut(Constants.mGoogleApiClient).setResultCallback(
-                                new ResultCallback<Status>() {
-                                    @Override
-                                    public void onResult(@NonNull Status status) {
-                                        Log.i(Constants.TAG, "Signed Out");
-                                        signIn.setVisibility(View.VISIBLE);
-                                        profileImageView.setImageResource(R.drawable.ic_profile);
-                                        Constants.mCredential.setSelectedAccountName(null);
-                                    }
-                                }
-                        );
-                        break;
-                }
-                return true;
-            }
-        });
-
         gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .requestScopes(Drive.SCOPE_FILE)
                 .build();
@@ -153,6 +148,49 @@ public class LaunchActivity extends AppCompatActivity implements GoogleApiClient
                 getApplicationContext(), Arrays.asList(Constants.SCOPES))
                 .setBackOff(new ExponentialBackOff());
 
+        if (isConnected) {
+            profileEmail = mySharedPreferences.getProfileEmail();
+            profileImage = mySharedPreferences.getProfilePhoto();
+            profileName = mySharedPreferences.getProfileName();
+
+            profileTextView.setText(profileName);
+            Constants.mCredential.setSelectedAccountName(profileEmail);
+
+            if (profileImage != null) {
+                new MyProfilePhotoTask(profileImageView).execute(profileImage);
+            }
+        }
+
+        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.settings:
+                        Intent intent = new Intent(LaunchActivity.this, SettingsActivity.class);
+                        startActivity(intent);
+                        break;
+                    case R.id.logout:
+                        Auth.GoogleSignInApi.signOut(Constants.mGoogleApiClient).setResultCallback(
+                                new ResultCallback<Status>() {
+                                    @Override
+                                    public void onResult(@NonNull Status status) {
+                                        Log.i(Constants.TAG, "Signed Out");
+                                        signIn.setVisibility(View.VISIBLE);
+                                        profileImageView.setImageResource(R.drawable.ic_profile);
+                                        profileTextView.setText("");
+                                        Constants.mCredential.setSelectedAccountName(null);
+                                        isConnected = false;
+                                        mySharedPreferences.setConnected(false);
+                                    }
+                                }
+                        );
+                        break;
+                }
+                return true;
+            }
+        });
+
+
         signIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -164,9 +202,12 @@ public class LaunchActivity extends AppCompatActivity implements GoogleApiClient
         spreadsheetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (Constants.mGoogleApiClient.isConnected() &&
-                        Constants.mCredential.getSelectedAccountName() != null) {
+                Log.i(Constants.TAG, "onClick: " + isConnected + "\n" + Constants.mCredential.getSelectedAccountName());
+                if (isConnected && Constants.mCredential.getSelectedAccountName() != null) {
                     chooseFile();
+                }
+                else if(isConnected && Constants.mCredential.getSelectedAccountName() == null){
+                    chooseAccount();
                 }
                 else {
                     Toast.makeText(LaunchActivity.this, "Sign in first", Toast.LENGTH_LONG).show();
@@ -174,19 +215,31 @@ public class LaunchActivity extends AppCompatActivity implements GoogleApiClient
             }
         });
 
-        if (Constants.mGoogleApiClient.isConnected()) {
-            signIn.setVisibility(View.GONE);
+        if (isConnected) {
+            signIn.setVisibility(View.INVISIBLE);
         }
     }
 
-    @Override
+    public void setLocale(String lang) {
+        Locale myLocale = new Locale(lang);
+        Resources res = getResources();
+        DisplayMetrics dm = res.getDisplayMetrics();
+        Configuration conf = res.getConfiguration();
+        conf.locale = myLocale;
+        res.updateConfiguration(conf, dm);
+    }
+
+
+        @Override
     protected void onStart() {
         super.onStart();
+        Constants.mGoogleApiClient.connect();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        Constants.mGoogleApiClient.disconnect();
     }
 
     @Override
@@ -196,12 +249,35 @@ public class LaunchActivity extends AppCompatActivity implements GoogleApiClient
                 GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
                 if (result.isSuccess()) {
                     GoogleSignInAccount account = result.getSignInAccount();
-                    profileImage = account.getPhotoUrl();
-                    profileName = account.getDisplayName();
-                    Constants.mCredential.setSelectedAccountName(account.getEmail());
-                    new MyProfilePhotoTask(profileImageView).execute(profileImage.toString());
 
-                    signIn.setVisibility(View.GONE);
+                    profileEmail = account.getEmail();
+                    profileName = account.getDisplayName();
+
+                    mySharedPreferences.setProfileName(profileName);
+                    mySharedPreferences.setProfileEmail(profileEmail);
+
+                    profileTextView.setText(profileName);
+
+                    if (account.getPhotoUrl() != null) {
+                        profileImage = account.getPhotoUrl().toString();
+                        mySharedPreferences.setProfilePhoto(profileImage.toString());
+                        new MyProfilePhotoTask(profileImageView).execute(profileImage.toString());
+                    }
+                    else {
+                        mySharedPreferences.setProfilePhoto(null);
+                    }
+
+                    signIn.setVisibility(View.INVISIBLE);
+                    isConnected = true;
+                    mySharedPreferences.setConnected(true);
+
+                    if (EasyPermissions.hasPermissions(
+                            this, Manifest.permission.GET_ACCOUNTS)) {
+                        Constants.mCredential.setSelectedAccountName(profileEmail);
+                    }
+                    else {
+                        chooseAccount();
+                    }
                 }
                 break;
 
@@ -223,8 +299,6 @@ public class LaunchActivity extends AppCompatActivity implements GoogleApiClient
                                     spreadSheetId = theData.getAlternateLink().split("/")[5];
 
                                     mySharedPreferences.setSpreadsheetId(spreadSheetId);
-                                    mySharedPreferences.setProfileName(profileName);
-                                    mySharedPreferences.setProfilePhoto(profileImage.toString());
 
                                     Intent intent = new Intent(LaunchActivity.this, ListProductsActivity.class);
                                     startActivity(intent);
@@ -242,11 +316,13 @@ public class LaunchActivity extends AppCompatActivity implements GoogleApiClient
                 }
                 break;
 
-            case Constants.REQUEST_ACCOUNT_PICKER:
+            case Constants.REQUEST_PERMISSION_GET_ACCOUNTS:
+                Log.i(Constants.TAG, "onActivityResult: REQUEST_PERMISSION_GET_ACCOUNTS");
                 if (resultCode == RESULT_OK && data != null &&
                         data.getExtras() != null) {
                     String accountName =
                             data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+                    Log.i(Constants.TAG, "onActivityResult: Account Name " + accountName);
                     if (accountName != null) {
                         SharedPreferences settings =
                                 getSharedPreferences(Constants.PREFS, Context.MODE_PRIVATE);
@@ -260,9 +336,36 @@ public class LaunchActivity extends AppCompatActivity implements GoogleApiClient
         }
     }
 
+    @AfterPermissionGranted(Constants.REQUEST_PERMISSION_GET_ACCOUNTS)
+    private void chooseAccount() {
+        if (! EasyPermissions.hasPermissions(
+                this, Manifest.permission.GET_ACCOUNTS)) {
+            // Request the GET_ACCOUNTS permission via a user dialog
+            Log.i(Constants.TAG, "chooseAccount: ");
+            EasyPermissions.requestPermissions(
+                    this,
+                    "This app needs to access your Google account (via Contacts).",
+                    Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
+                    Manifest.permission.GET_ACCOUNTS);
+        }
+    }
+
+
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Log.i(Constants.TAG, "onConnected: ");
+        if (! isConnected) {
+            Auth.GoogleSignInApi.signOut(Constants.mGoogleApiClient).setResultCallback(
+                    new ResultCallback<Status>() {
+                        @Override
+                        public void onResult(@NonNull Status status) {
+                            Log.i(Constants.TAG, "Signed Out");
+                            Constants.mCredential.setSelectedAccountName(null);
+                        }
+                    }
+            );
+        }
+
     }
 
     @Override
@@ -288,47 +391,28 @@ public class LaunchActivity extends AppCompatActivity implements GoogleApiClient
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        Log.i(Constants.TAG, "onRequestPermissionsResult: ");
+
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @Override
     public void onPermissionsGranted(int requestCode, List<String> perms) {
+        Log.i(Constants.TAG, "onPermissionsGranted: ");
+        if (profileEmail != null) {
+            Constants.mCredential.setSelectedAccountName(profileEmail);
+        }
+        else {
+            Toast.makeText(LaunchActivity.this, "Sign in first", Toast.LENGTH_LONG).show();
+        }
 
     }
 
     @Override
     public void onPermissionsDenied(int requestCode, List<String> perms) {
 
-    }
-
-    private boolean isDeviceOnline() {
-        ConnectivityManager connMgr =
-                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        return (networkInfo != null && networkInfo.isConnected());
-    }
-
-    private boolean isGooglePlayServicesAvailable() {
-        GoogleApiAvailability apiAvailability =
-                GoogleApiAvailability.getInstance();
-        final int connectionStatusCode =
-                apiAvailability.isGooglePlayServicesAvailable(this);
-        return connectionStatusCode == ConnectionResult.SUCCESS;
-    }
-
-    private void acquireGooglePlayServices() {
-        GoogleApiAvailability apiAvailability =
-                GoogleApiAvailability.getInstance();
-        final int connectionStatusCode =
-                apiAvailability.isGooglePlayServicesAvailable(this);
-        if (apiAvailability.isUserResolvableError(connectionStatusCode)) {
-            showGooglePlayServicesAvailabilityErrorDialog(connectionStatusCode);
-        }
-    }
-
-    public void showGooglePlayServicesAvailabilityErrorDialog(
-            final int connectionStatusCode) {
-        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-        Dialog dialog = apiAvailability.getErrorDialog(
-                LaunchActivity.this,
-                connectionStatusCode,
-                Constants.REQUEST_GOOGLE_PLAY_SERVICES);
-        dialog.show();
     }
 }

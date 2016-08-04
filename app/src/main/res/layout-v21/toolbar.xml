@@ -17,6 +17,7 @@
         android:indeterminateTint="#795548"
         android:indeterminateTintMode="src_in"
         android:layout_gravity="end"
+        android:visibility="invisible"
         />
 
 </android.support.v7.widget.Toolbar>

@@ -1,7 +1,6 @@
 package com.cilatare.barcodescanner.AsyncTasks;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -9,12 +8,11 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.cilatare.barcodescanner.Constants;
-import com.cilatare.barcodescanner.activities.MainActivity;
-import com.cilatare.barcodescanner.model.Product;
 import com.cilatare.barcodescanner.adapter.RecyclerAdapter;
+import com.cilatare.barcodescanner.model.Product;
+import com.cilatare.barcodescanner.utils.Handles;
 import com.cilatare.barcodescanner.utils.MySharedPreferences;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -33,7 +31,7 @@ import java.util.List;
  */
 public class GetProductsTask extends AsyncTask<Void, Void, List<Product>> {
 
-    private Context context;
+    private Activity activity;
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private com.google.api.services.sheets.v4.Sheets mService = null;
@@ -41,11 +39,11 @@ public class GetProductsTask extends AsyncTask<Void, Void, List<Product>> {
 
     private MySharedPreferences mySharedPreferences;
 
-    public GetProductsTask(Context context, GoogleAccountCredential credential, RecyclerView recyclerView, ProgressBar progressBar) {
-        this.context = context;
+    public GetProductsTask(Activity activity, GoogleAccountCredential credential, RecyclerView recyclerView, ProgressBar progressBar) {
+        this.activity = activity;
         this.recyclerView = recyclerView;
         this.progressBar = progressBar;
-        this.mySharedPreferences = new MySharedPreferences(this.context);
+        this.mySharedPreferences = new MySharedPreferences(this.activity.getApplicationContext());
 
         HttpTransport transport = AndroidHttp.newCompatibleTransport();
         JacksonFactory jsonFactory = JacksonFactory.getDefaultInstance();
@@ -75,9 +73,13 @@ public class GetProductsTask extends AsyncTask<Void, Void, List<Product>> {
     private List<Product> getDataFromApi() throws IOException {
         String range = "Sheet1!A2:D";
 
+        Log.i(Constants.TAG, "getDataFromApi: " + mySharedPreferences.getSpreadsheetId());
+
         ValueRange response = this.mService.spreadsheets().values()
                 .get(mySharedPreferences.getSpreadsheetId(), range)
                 .execute();
+
+        Log.i(Constants.TAG, "getDataFromApi: " + response.toString());
 
         List<List<Object>> values = response.getValues();
 
@@ -98,10 +100,10 @@ public class GetProductsTask extends AsyncTask<Void, Void, List<Product>> {
     @Override
     protected void onPostExecute(List<Product> products) {
 
-        RecyclerAdapter adapter = new RecyclerAdapter(context, products);
+        RecyclerAdapter adapter = new RecyclerAdapter(activity.getApplicationContext(), products);
         recyclerView.setAdapter(adapter);
 
-        LinearLayoutManager mLinearLayoutManagerVertical = new LinearLayoutManager(context); // (Context context, int spanCount)
+        LinearLayoutManager mLinearLayoutManagerVertical = new LinearLayoutManager(activity.getApplicationContext()); // (Context context, int spanCount)
         mLinearLayoutManagerVertical.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(mLinearLayoutManagerVertical);
 
@@ -112,10 +114,20 @@ public class GetProductsTask extends AsyncTask<Void, Void, List<Product>> {
     @Override
     protected void onCancelled() {
         if (mLastError != null) {
-                Log.i(Constants.TAG, "he following error occurred:\n"
+            if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
+                Handles.showGooglePlayServicesAvailabilityErrorDialog(
+                        ((GooglePlayServicesAvailabilityIOException) mLastError)
+                                .getConnectionStatusCode(), activity);
+            } else if (mLastError instanceof UserRecoverableAuthIOException) {
+                activity.startActivityForResult(
+                        ((UserRecoverableAuthIOException) mLastError).getIntent(),
+                        Constants.REQUEST_AUTHORIZATION);
+            } else {
+                Log.i(Constants.TAG, "The following error occurred:\n"
                         + mLastError.getMessage());
+            }
         } else {
-            Toast.makeText(context, "Request cancelled.", Toast.LENGTH_LONG).show();
+            Log.i(Constants.TAG, "Request cancelled.");
         }
 
         progressBar.setVisibility(View.INVISIBLE);

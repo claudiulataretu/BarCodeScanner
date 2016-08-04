@@ -13,18 +13,9 @@
         android:supportsRtl="true"
         android:theme="@style/MaterialTheme">
         <activity
-            android:name=".activities.MainActivity"
-            android:screenOrientation="portrait">
-
-            <!--
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            -->
-        </activity>
-        <activity android:name=".activities.LaunchActivity">
+            android:name=".activities.LaunchActivity"
+            android:screenOrientation="portrait"
+            android:configChanges="locale">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -36,7 +27,17 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity android:name=".activities.ListProductsActivity"></activity>
+        <activity android:name=".activities.ListProductsActivity" />
+        <activity
+            android:name=".activities.ScanProductsActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" />
+        <activity android:name=".activities.ProductActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".activities.SearchProductsActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".activities.SettingsActivity"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

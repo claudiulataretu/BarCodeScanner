@@ -1,13 +1,15 @@
 package com.cilatare.barcodescanner.AsyncTasks;
 
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
+import android.widget.ProgressBar;
 
 import com.cilatare.barcodescanner.Constants;
-import com.cilatare.barcodescanner.activities.MainActivity;
 import com.cilatare.barcodescanner.model.Product;
+import com.cilatare.barcodescanner.utils.Handles;
+import com.cilatare.barcodescanner.utils.MySharedPreferences;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
@@ -32,14 +34,19 @@ import java.util.List;
  */
 public class UpdateProductTask extends AsyncTask<Product, Void, Void> {
 
-    private MainActivity mainActivity;
+    private Activity activity;
     private com.google.api.services.sheets.v4.Sheets mService = null;
     private Exception mLastError = null;
+    private ProgressBar progressBar;
+    private MySharedPreferences mySharedPreferences;
 
-    public UpdateProductTask(MainActivity mainActivity, GoogleAccountCredential credential) {
-        this.mainActivity = mainActivity;
+    public UpdateProductTask(Activity activity, GoogleAccountCredential credential, ProgressBar progressBar) {
+        this.activity = activity;
+        this.progressBar = progressBar;
         HttpTransport transport = AndroidHttp.newCompatibleTransport();
         JacksonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+
+        mySharedPreferences = new MySharedPreferences(activity.getApplicationContext());
 
         mService = new com.google.api.services.sheets.v4.Sheets.Builder(
                 transport, jsonFactory, credential)
@@ -50,7 +57,7 @@ public class UpdateProductTask extends AsyncTask<Product, Void, Void> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        mainActivity.progressBar.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -59,7 +66,7 @@ public class UpdateProductTask extends AsyncTask<Product, Void, Void> {
             String range = "Sheet1!A2:D";
             List<Product> results = new ArrayList<>();
             ValueRange response = this.mService.spreadsheets().values()
-                    .get(MainActivity.spreadsheetId, range)
+                    .get(mySharedPreferences.getSpreadsheetId(), range)
                     .execute();
             List<List<Object>> values = response.getValues();
 
@@ -109,7 +116,7 @@ public class UpdateProductTask extends AsyncTask<Product, Void, Void> {
 
                 BatchUpdateSpreadsheetRequest batchUpdateRequest = new BatchUpdateSpreadsheetRequest()
                         .setRequests(requests);
-                this.mService.spreadsheets().batchUpdate(MainActivity.spreadsheetId, batchUpdateRequest).execute();
+                this.mService.spreadsheets().batchUpdate(mySharedPreferences.getSpreadsheetId(), batchUpdateRequest).execute();
             }
         }
 
@@ -118,29 +125,28 @@ public class UpdateProductTask extends AsyncTask<Product, Void, Void> {
 
     @Override
     protected void onPostExecute(Void aVoid) {
-        super.onPostExecute(aVoid);
-        mainActivity.progressBar.setVisibility(View.INVISIBLE);
+        progressBar.setVisibility(View.INVISIBLE);
     }
 
+    @Override
     protected void onCancelled() {
         if (mLastError != null) {
             if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
-                mainActivity.showGooglePlayServicesAvailabilityErrorDialog(
+                Handles.showGooglePlayServicesAvailabilityErrorDialog(
                         ((GooglePlayServicesAvailabilityIOException) mLastError)
-                                .getConnectionStatusCode());
+                                .getConnectionStatusCode(), activity);
             } else if (mLastError instanceof UserRecoverableAuthIOException) {
-                mainActivity.startActivityForResult(
+                activity.startActivityForResult(
                         ((UserRecoverableAuthIOException) mLastError).getIntent(),
                         Constants.REQUEST_AUTHORIZATION);
             } else {
-                Log.i("ResultsAPI", "he following error occurred:\n"
+                Log.i(Constants.TAG, "The following error occurred:\n"
                         + mLastError.getMessage());
-                Toast.makeText(mainActivity, "The following error occurred:\n"
-                        + mLastError.getMessage(), Toast.LENGTH_LONG).show();
             }
         } else {
-            Toast.makeText(mainActivity, "Request cancelled.", Toast.LENGTH_LONG).show();
+            Log.i(Constants.TAG, "Request cancelled.");
         }
-        mainActivity.progressBar.setVisibility(View.INVISIBLE);
+
+        progressBar.setVisibility(View.INVISIBLE);
     }
 }

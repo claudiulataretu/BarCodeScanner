@@ -1,0 +1,45 @@
+<resources>
+    <string name="app_name">BarCode Scanner</string>
+
+    <string name="action_settings">Setari</string>
+    <string name="title">Titlu</string>
+    <string name="description">Descriere</string>
+    <string name="add_image">adaugaImagine</string>
+    <string name="delete_image">stergeImagine</string>
+    <string name="thumbnail">thumbnail</string>
+
+    <string name="list_products">Afiseaza Produse</string>
+    <string name="search_product">Cauta Produs</string>
+    <string name="scan_product">Scaneaza Produs</string>
+
+    <string-array name="nav_drawer_labels">
+        <item>@string/list_products</item>
+        <item>@string/search_product</item>
+        <item>@string/scan_product</item>
+    </string-array>
+
+    <string name="drawer_open">Deschide</string>
+    <string name="drawer_close">Inchide</string>
+
+    <string name="delete">Sterge</string>
+    <string name="search">Cauta</string>
+    <string name="settings">Setari</string>
+    <string name="edit">Editeaza</string>
+    <string name="exit">Iesire</string>
+    <string name="log_out">Log Out</string>
+    <string name="profile_photo">Imagine Profil</string>
+    <string name="select_working_sheet">Selecteaza Foaie de Lucru</string>
+    <string name="search_icon">Iconita Cautare</string>
+    <string name="place_holder">Place Holder</string>
+    <string name="add_product">ADAUGA PRODUS</string>
+    <string name="modify_product">MODIFICA PRODUS</string>
+    <string name="scan">SCANEAZA</string>
+    <string name="language">Limba</string>
+    <string name="romanian">Romana</string>
+    <string name="english">Engleza</string>
+    <string name="product_quantity">CANTITATE PRODUS</string>
+    <string name="product_price">PRET PRODUS</string>
+    <string name="product_name">NUME PRODUS</string>
+    <string name="product_barcode">COD DE BARE PRODUS</string>
+
+</resources>

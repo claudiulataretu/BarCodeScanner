@@ -1,19 +1,22 @@
 package com.cilatare.barcodescanner.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.cilatare.barcodescanner.R;
+import com.cilatare.barcodescanner.activities.ListProductsActivity;
+import com.cilatare.barcodescanner.activities.ScanProductsActivity;
+import com.cilatare.barcodescanner.activities.SearchProductsActivity;
+import com.cilatare.barcodescanner.model.NavigationDrawerItem;
 
 import java.util.Collections;
 import java.util.List;
-
-import com.cilatare.barcodescanner.R;
-import com.cilatare.barcodescanner.model.NavigationDrawerItem;
 
 public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDrawerAdapter.MyViewHolder> {
 
@@ -36,23 +39,26 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position) {
-        NavigationDrawerItem current = mDataList.get(position);
+        final NavigationDrawerItem current = mDataList.get(position);
 
         holder.imgIcon.setImageResource(current.getImageId());
         holder.title.setText(current.getTitle());
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                switch (holder.title.getText().toString()) {
-                    case "List Products":
-                        Toast.makeText(context, holder.title.getText().toString(), Toast.LENGTH_SHORT).show();
-                        break;
-                    case "Search Products":
-                        Toast.makeText(context, holder.title.getText().toString(), Toast.LENGTH_SHORT).show();
-                        break;
-                    case "Scan Product":
-                        Toast.makeText(context, holder.title.getText().toString(), Toast.LENGTH_SHORT).show();
-                        break;
+                Intent intent;
+
+                if (holder.title.getText().toString().equals(context.getResources().getString(R.string.list_products))) {
+                    intent = new Intent(context, ListProductsActivity.class);
+                    context.startActivity(intent);
+                }
+                else if (holder.title.getText().toString().equals(context.getResources().getString(R.string.search_product))) {
+                    intent = new Intent(context, SearchProductsActivity.class);
+                    context.startActivity(intent);
+                }
+                else if (holder.title.getText().toString().equals(context.getResources().getString(R.string.scan_product))) {
+                    intent = new Intent(context, ScanProductsActivity.class);
+                    context.startActivity(intent);
                 }
             }
         });

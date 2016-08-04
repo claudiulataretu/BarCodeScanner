@@ -1,12 +1,17 @@
 package com.cilatare.barcodescanner.AsyncTasks;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import com.cilatare.barcodescanner.Constants;
-import com.cilatare.barcodescanner.activities.MainActivity;
+import com.cilatare.barcodescanner.activities.ProductActivity;
 import com.cilatare.barcodescanner.model.Product;
+import com.cilatare.barcodescanner.utils.Handles;
+import com.cilatare.barcodescanner.utils.MySharedPreferences;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
@@ -16,23 +21,28 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by android-sdk on 7/14/16.
+ * Created by LightSpark on 7/27/2016.
  */
-public class SearchProductTask extends AsyncTask<String, Void, List<Product>> {
-    private MainActivity mainActivity;
+
+public class SearchProductTask extends AsyncTask<String, Void, Product> {
+
+    private Activity activity;
+    private ProgressBar progressBar;
+    private int searchCode;
     private com.google.api.services.sheets.v4.Sheets mService = null;
     private Exception mLastError = null;
 
-    private String query;
+    private MySharedPreferences mySharedPreferences;
 
-    private final String TAG = SearchProductTask.class.getCanonicalName();
+    public SearchProductTask(Activity activity, GoogleAccountCredential credential, ProgressBar progressBar, int searchCode) {
+        this.activity = activity;
+        this.progressBar = progressBar;
+        this.searchCode = searchCode;
+        this.mySharedPreferences = new MySharedPreferences(activity.getApplicationContext());
 
-    public SearchProductTask(MainActivity mainActivity, GoogleAccountCredential credential) {
-        this.mainActivity = mainActivity;
         HttpTransport transport = AndroidHttp.newCompatibleTransport();
         JacksonFactory jsonFactory = JacksonFactory.getDefaultInstance();
 
@@ -44,19 +54,13 @@ public class SearchProductTask extends AsyncTask<String, Void, List<Product>> {
 
     @Override
     protected void onPreExecute() {
-        super.onPreExecute();
+        progressBar.setVisibility(View.VISIBLE);
     }
 
-    /**
-     * Background task to call Google Sheets API.
-     *
-     * @param params no parameters needed for this task.
-     */
     @Override
-    protected List<Product> doInBackground(String... params) {
+    protected Product doInBackground(String... params) {
         try {
-            query = params[0];
-            return getDataFromApi();
+            return getDataFromApi(params[0]);
         } catch (Exception e) {
             mLastError = e;
             cancel(true);
@@ -64,66 +68,77 @@ public class SearchProductTask extends AsyncTask<String, Void, List<Product>> {
         }
     }
 
-    /**
-     * Fetch a list of names and majors of students in a sample spreadsheet:
-     * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-     *
-     * @return List of names and majors
-     * @throws IOException
-     */
-    private List<Product> getDataFromApi() throws IOException {
+    private Product getDataFromApi(String searchString) throws IOException {
         String range = "Sheet1!A2:D";
-        List<Product> results = new ArrayList<>();
+
         ValueRange response = this.mService.spreadsheets().values()
-                .get(MainActivity.spreadsheetId, range)
+                .get(mySharedPreferences.getSpreadsheetId(), range)
                 .execute();
+
         List<List<Object>> values = response.getValues();
 
         if (values != null) {
             for (List row : values) {
-                results.add(new Product(row.get(0).toString(),
-                        row.get(1).toString(),
-                        Double.valueOf(row.get(2).toString()),
-                        Double.valueOf(row.get(3).toString())));
+                switch (searchCode) {
+                    case Constants.SEARCH_BY_BARCODE_PRODUCT_CODE:
+                        if (row.get(0).toString().equals(searchString)) {
+                            return new Product(row.get(0).toString(),
+                                    row.get(1).toString(),
+                                    Double.valueOf(row.get(2).toString()),
+                                    Double.valueOf(row.get(3).toString()));
+                        }
+                        break;
+
+                    case Constants.SEARCH_BY_NAME_PRODUCT_CODE:
+                        Log.i(Constants.TAG, "getDataFromApi: " + row.get(1).toString() + " " + searchString);
+                        if (row.get(1).toString().equals(searchString)) {
+                            return new Product(row.get(0).toString(),
+                                    row.get(1).toString(),
+                                    Double.valueOf(row.get(2).toString()),
+                                    Double.valueOf(row.get(3).toString()));
+                        }
+                        break;
+                }
+            }
+            switch (searchCode) {
+                case Constants.SEARCH_BY_BARCODE_PRODUCT_CODE:
+                    return new Product(searchString, "", Double.NaN, Double.NaN);
             }
         }
-        return results;
+
+        return new Product("", "", Double.NaN, Double.NaN);
     }
 
     @Override
-    protected void onPostExecute(List<Product> output) {
+    protected void onPostExecute(Product product) {
 
-        for (Product product : output) {
-            if (product.getName().equals(query) || product.getBarcode().equals(query)) {
-                Log.i(TAG, "Product found");
-                mainActivity.barcodeEditText.setText(product.getBarcode());
-                mainActivity.nameEditText.setText(product.getName());
-                mainActivity.priceEditText.setText(product.getPrice().toString());
-                mainActivity.quantityEditText.setText(product.getQuantity().toString());
+            Intent intent = new Intent(activity.getApplicationContext(), ProductActivity.class);
+            intent.putExtra(Constants.EXTRA_PRODUCT, product);
 
-            }
-        }
+            activity.startActivity(intent);
+
+        progressBar.setVisibility(View.INVISIBLE);
     }
 
     @Override
     protected void onCancelled() {
         if (mLastError != null) {
             if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
-                mainActivity.showGooglePlayServicesAvailabilityErrorDialog(
+                Handles.showGooglePlayServicesAvailabilityErrorDialog(
                         ((GooglePlayServicesAvailabilityIOException) mLastError)
-                                .getConnectionStatusCode());
+                                .getConnectionStatusCode(), activity);
             } else if (mLastError instanceof UserRecoverableAuthIOException) {
-                mainActivity.startActivityForResult(
+                activity.startActivityForResult(
                         ((UserRecoverableAuthIOException) mLastError).getIntent(),
                         Constants.REQUEST_AUTHORIZATION);
             } else {
-                Log.i(TAG, "he following error occurred:\n"
+                Log.i(Constants.TAG, "The following error occurred:\n"
                         + mLastError.getMessage());
-                Toast.makeText(mainActivity, "The following error occurred:\n"
-                        + mLastError.getMessage(), Toast.LENGTH_LONG).show();
             }
         } else {
-            Toast.makeText(mainActivity, "Request cancelled.", Toast.LENGTH_LONG).show();
+            Log.i(Constants.TAG, "Request cancelled.");
         }
+
+        progressBar.setVisibility(View.INVISIBLE);
     }
 }

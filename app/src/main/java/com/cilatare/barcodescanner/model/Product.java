@@ -1,9 +1,12 @@
 package com.cilatare.barcodescanner.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by android-sdk on 7/13/16.
  */
-public class Product {
+public class Product implements Parcelable {
 
     private String barcode;
     private String name;
@@ -20,6 +23,25 @@ public class Product {
         this.quantity = quantity;
     }
 
+
+    protected Product(Parcel in) {
+        this.barcode = in.readString();
+        this.name = in.readString();
+        this.price = in.readDouble();
+        this.quantity = in.readDouble();
+    }
+
+    public static final Creator<Product> CREATOR = new Creator<Product>() {
+        @Override
+        public Product createFromParcel(Parcel in) {
+            return new Product(in);
+        }
+
+        @Override
+        public Product[] newArray(int size) {
+            return new Product[size];
+        }
+    };
 
     public String getBarcode() {
         return barcode;
@@ -52,5 +74,19 @@ public class Product {
     public void setQuantity(Double quantity) {
         this.quantity = quantity;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(barcode);
+        parcel.writeString(name);
+        parcel.writeDouble(price);
+        parcel.writeDouble(quantity);
+    }
+
 
 }
